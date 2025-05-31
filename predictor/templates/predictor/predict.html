@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Cancer Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #bdc3c7;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea25, #764ba225);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .upload-text {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .image-preview:hover {
+            transform: scale(1.02);
+        }
+
+        .file-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #c33;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-area {
+                padding: 40px 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Skin Cancer Predictor</h1>
+            <p>Upload an image for AI-powered skin lesion analysis</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="prediction-form">
+            {% csrf_token %}
+            <div class="upload-section">
+                <div class="upload-area" id="upload-area">
+                    <span class="upload-icon">📷</span>
+                    <div class="upload-text">Drop your image here or click to browse</div>
+                    <div class="upload-subtext">Supports JPG, PNG, JPEG files up to 10MB</div>
+                    <input type="file" id="file-input" name="image" accept="image/*" required>
+                </div>
+
+                <div class="preview-container" id="preview-container">
+                    <img id="image-preview" class="image-preview" alt="Preview">
+                    <div class="file-info" id="file-info">
+                        <div class="file-name" id="file-name"></div>
+                        <div class="file-size" id="file-size"></div>
+                    </div>
+                </div>
+
+                <div class="error-message" id="error-message"></div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your image... Please wait</p>
+            </div>
+
+            <div class="button-group">
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    🏠 Return Home
+                </a>
+                <button type="submit" class="btn btn-primary" id="predict-btn" disabled>
+                    🔍 Analyze Image
+                </button>
+            </div>
+        </form>
+<div id="prediction-result" style="margin-top: 30px; text-align: center;">
+  {% if prediction %}
+    <h1 style="color: #b33; font-weight: 700; font-size: 2.2rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+      You seem to have {{ prediction }}
+    </h1>
+  {% endif %}
+</div>
+
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const predictBtn = document.getElementById('predict-btn');
+        const errorMessage = document.getElementById('error-message');
+        const loading = document.getElementById('loading');
+        const form = document.getElementById('prediction-form');
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                showError('Please upload a valid image file (JPG, PNG, JPEG)');
+                return;
+            }
+
+            // Validate file size (10MB limit)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size must be less than 10MB');
+                return;
+            }
+
+            hideError();
+
+            // Display preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                previewContainer.style.display = 'block';
+                predictBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        // Form submission with loading state
+        form.addEventListener('submit', (e) => {
+            if (!fileInput.files.length) {
+                e.preventDefault();
+                showError('Please select an image to analyze');
+                return;
+            }
+
+            // Show loading state
+            loading.style.display = 'block';
+            predictBtn.disabled = true;
+            predictBtn.textContent = 'Analyzing...';
+        });
+
+        // Smooth animations on load
+        window.addEventListener('load', () => {
+            document.querySelector('.container').style.opacity = '0';
+            document.querySelector('.container').style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                document.querySelector('.container').style.transition = 'all 0.6s ease';
+                document.querySelector('.container').style.opacity = '1';
+                document.querySelector('.container').style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
